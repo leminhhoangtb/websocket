@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>IOT NHÓM 6</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="/style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="alert <%=type%>">
+            <strong><%=type%></strong><%=msg%>
+        </div>
+        <h1>IOT NHÓM 6! Led Matrix </h1>
+        <div class="row">
+
+            <div class="pc-tab">
+                <input checked="checked" id="tab1" type="radio" name="pct" />
+                <input id="tab2" type="radio" name="pct" />
+                <input id="tab3" type="radio" name="pct" />
+                <nav>
+                    <ul  class="nav">
+                        <li class="tab1 nav-item">
+                            <label for="tab1">Hiện chữ</label>
+                        </li>
+                        <li class="tab2 nav-item">
+                            <label for="tab2">Nhiệt độ</label>
+                        </li>
+                        <li class="tab3 nav-item">
+                            <label for="tab3">Thống kê</label>
+                        </li>
+                    </ul>
+                </nav>
+
+                <section class="text-center">
+                    <div class="tab1">
+                        <form id="form1" action="/get_Text" method="post">
+                            <p class="server-status" <%=connected? `style=color:green;` : `style=color:red;`%>> <%=
+                                    connected? `ESP đã kết nối!` : `ESP chưa kết nối :(`%>
+                            </p>
+                            <div class="form-group">
+                                <span>Nhập chuỗi muốn hiện:</span>
+                                <br>
+                                <input placeholder="Nhập chuỗi" id="stringCurrent" class="form-control" type="text"
+                                    name="Ndung" maxlength="255">
+                            </div>
+                            <div class="form-group">
+                                <select form="form1" class="form-control" name="Kban">
+                                    <option value="1">Scroll Left</option>
+                                    <option value="2">Scroll Right</option>
+                                    <option value="3">Scroll Up</option>
+                                    <option value="4">Scroll Down</option>
+                                </select>
+                            </div>
+
+                            <input class="btnSubmit btn" type="submit" value="Submit">
+                        </form>
+                    </div>
+                    <div class="tab2">
+                        <form id="form2" action="/get_Text" method="post">
+                            <p class="server-status" <%=connected? `style=color:green;` : `style=color:red;`%>> <%=
+                                    connected? `ESP đã kết nối!` : `ESP chưa kết nối :(`%>
+                            </p>
+                            <div class="form-group">
+                                <span class="">Nhiệt độ hiện tại:
+                                    <span id="tem"></span>°C
+                                </span>
+                            </div>
+                            <div class="form-group">
+                                <select form="form2" class="form-control" name="Kban">
+                                    <option value="1">Scroll Left</option>
+                                    <option value="2">Scroll Right</option>
+                                    <option value="3">Scroll Up</option>
+                                    <option value="4">Scroll Down</option>
+                                </select>
+                            </div>
+                            <input class="btnSubmit btn" type="submit" value="Submit">
+                        </form>
+                    </div>
+                    <div class="tab3">
+                        <table class="table">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col" style="width: 10%">#</th>
+                                    <th scope="col" style="width: 30%">Nội Dung</th>
+                                    <th scope="col" style="width: 15%">Nhiệt Độ</th>
+                                    <th scope="col" style="width: 15%">Kịch Bản</th>
+                                    <th scope="col" style="width: 20%">Lưu Ngày</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <% if(tableData.length> 0) {
+                                    tableData.forEach((data, index) => {
+                                    const date = (new Date(data.created_at))
+                                    const dateTime = date.toLocaleDateString() + ' ' +
+                                    date.toLocaleTimeString('vi-VN')%>
+                                    <tr>
+                                        <td>
+                                            <%= index + 1 %>
+                                        </td>
+                                        <td>
+                                            <%= data.noidung %>
+                                        </td>
+                                        <td>
+                                            <%= data.nhietdo %>
+                                        </td>
+                                        <td>
+                                            <%= data.kichban %>
+                                        </td>
+                                        <td>
+                                            <%= dateTime %>
+                                        </td>
+                                    </tr>
+                                    <% }); } else { %>
+                                        <tr>
+                                            <td colspan="5">Không có dữ liệu</td>
+                                        </tr>
+                                        <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var url = window.location.host; // hàm trả về url của trang hiện tại kèm theo port
+        var ws = new WebSocket('ws://' + url + '/ws');
+
+        function setTem(tem) {
+            console.log(tem)
+            var spanElement = document.querySelector("#tem");
+            spanElement.innerHTML = tem;
+        }
+
+        ws.onmessage = async (event) => {
+            const blob = new Blob([event.data])
+            blob.text().then(text => {
+                setTem(text)
+            })
+        }
+    </script>
+
+</body>
+
+</html>
